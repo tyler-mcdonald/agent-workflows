@@ -30,18 +30,25 @@ jobs:
       group: agent-pr-${{ github.event.issue.number }}
       cancel-in-progress: false
     steps:
-      - id: pr
+      - name: Look up PR
+        id: pr
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.issue.number }}
+        run: >-
+          gh pr view "$PR" --repo "$REPO"
+          --json isCrossRepository,headRefName
+          --jq '"cross=\(.isCrossRepository)\nhead_ref=\(.headRefName)"'
+          >> "$GITHUB_OUTPUT"
+
+      - name: Reject fork PRs
+        if: steps.pr.outputs.cross == 'true'
+        env:
+          PR: ${{ github.event.issue.number }}
         run: |
-          read -r cross head_ref < <(gh pr view "$PR" --repo "$REPO" --json isCrossRepository,headRefName --jq '"\(.isCrossRepository) \(.headRefName)"')
-          if [ "$cross" = "true" ]; then
-            echo "::error::PR #$PR comes from a fork; handle-review only supports same-repo branches."
-            exit 1
-          fi
-          echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+          echo "::error::PR #$PR comes from a fork; handle-review only supports same-repo branches."
+          exit 1
 
       - uses: actions/checkout@v7
         with:
