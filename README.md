@@ -1,18 +1,10 @@
 # agent-workflows
 
-Reusable GitHub Actions workflows that run a coding agent on pull requests. Only Claude is supported for now.
+Reusable workflows that run a coding agent on PRs. Claude only, for now.
 
 ## handle-review
 
-Runs the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) skill when you tag `@claude` in a PR comment, so the agent addresses the PR's open review threads, commits by concern, and pushes. The repo's own CI runs on that push.
-
-It only runs when the comment is on a PR, starts with `@claude` followed by a space (e.g. `@claude please fix the typo`), and was written by the repo owner. Reviews are never handled automatically.
-
-Runs are serialized per PR (`agent-pr-<number>`): a running run is never cancelled, but only one run waits behind it, so a newer comment replaces an earlier pending run. Each run is capped at 30 minutes and 60 turns.
-
-### Usage
-
-Add `.github/workflows/handle-review.yml` to the calling repo and set the `CLAUDE_CODE_OAUTH_TOKEN` secret:
+Comment `@claude <anything>` on a PR (repo owner only) to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on its open review threads. One run per PR at a time.
 
 ```yaml
 name: Handle review
@@ -33,8 +25,4 @@ jobs:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 ```
 
-### Inputs
-
-| Input | Default | Description |
-| --- | --- | --- |
-| `extra_allowed_tools` | `""` | Comma-separated tools to allow on top of the defaults (`gh pr view/edit/comment`, `gh api` thread replies, `git` status/diff/log/show/rev-parse/pull/add/commit/push, skill scripts, Read/Edit/Write/Glob/Grep), e.g. `Bash(make:*)`. |
+Optional input `extra_allowed_tools`: extra tools to allow, e.g. `Bash(make:*)`.
