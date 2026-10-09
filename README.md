@@ -37,4 +37,4 @@ jobs:
 
 | Input | Default | Description |
 | --- | --- | --- |
-| `extra_allowed_tools` | `""` | Comma-separated tools to allow on top of the defaults (`gh`, `git`, skill scripts, Read/Edit/Write/Glob/Grep), e.g. `Bash(make:*)`. |
+| `extra_allowed_tools` | `""` | Comma-separated tools to allow on top of the defaults (`gh pr view/edit/comment`, `gh api` thread replies, `git` status/diff/log/show/rev-parse/pull/add/commit/push, skill scripts, Read/Edit/Write/Glob/Grep), e.g. `Bash(make:*)`. |
