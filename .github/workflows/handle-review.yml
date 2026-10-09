@@ -35,22 +35,15 @@ jobs:
           REVIEW_BODY: ${{ github.event.review.body }}
           COMMIT: ${{ github.event.review.commit_id }}
         run: |
-          skip=false
-          if [ "$REVIEW_STATE" = "approved" ] && [ -z "$REVIEW_BODY" ]; then
-            count=$(gh api "repos/$REPO/pulls/$PR/reviews/$REVIEW_ID/comments" --jq length)
-            if [ "$count" = "0" ]; then
-              echo "Skipping: empty approval"
-              skip=true
-            fi
+          skip() { echo "Skipping: $1"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; }
+          if [ "$REVIEW_STATE" = "approved" ] && [ -z "$REVIEW_BODY" ] &&
+             [ "$(gh api "repos/$REPO/pulls/$PR/reviews/$REVIEW_ID/comments" --jq length)" = "0" ]; then
+            skip "empty approval"
           fi
-          if [ "$skip" = "false" ]; then
-            author=$(gh api "repos/$REPO/commits/$COMMIT" --jq .commit.author.name)
-            if [ "$author" = "claude[bot]" ]; then
-              echo "Skipping: reviewed commit is Claude's"
-              skip=true
-            fi
+          if [ "$(gh api "repos/$REPO/commits/$COMMIT" --jq .commit.author.name)" = "claude[bot]" ]; then
+            skip "reviewed commit is Claude's"
           fi
-          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - if: steps.guard.outputs.skip == 'false'
         uses: actions/checkout@v7
