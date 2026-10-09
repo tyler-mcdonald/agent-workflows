@@ -15,58 +15,44 @@ on:
 jobs:
   handle:
     if: >-
-      github.event_name == 'pull_request_review' &&
-      (github.event.review.user.login == github.repository_owner ||
-       github.event.review.user.login == 'coderabbitai[bot]') &&
-      !github.event.pull_request.draft
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude') &&
+      github.event.comment.user.login == github.repository_owner
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
-      group: agent-pr-${{ github.event.pull_request.number }}
+      group: agent-pr-${{ github.event.issue.number }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v7
-        with:
-          repository: tyler-mcdonald/agent-workflows
-          ref: ${{ job.workflow_sha }}
-          path: .agent-workflows
-          persist-credentials: false
-
-      - id: guard
+      - id: pr
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          PR: ${{ github.event.pull_request.number }}
-          REVIEW_ID: ${{ github.event.review.id }}
-          REVIEW_STATE: ${{ github.event.review.state }}
-          REVIEW_BODY: ${{ github.event.review.body }}
-          COMMIT: ${{ github.event.review.commit_id }}
-        run: python3 .agent-workflows/scripts/review_guard.py
+          PR: ${{ github.event.issue.number }}
+        run: |
+          head_ref=$(gh pr view "$PR" --repo "$REPO" --json headRefName --jq .headRefName)
+          echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
 
-      - if: steps.guard.outputs.skip == 'false'
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ steps.pr.outputs.head_ref }}
           fetch-depth: 0
 
-      - if: steps.guard.outputs.skip == 'false'
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           repository: tyler-mcdonald/skills
           path: .skills-src
           persist-credentials: false
 
-      - if: steps.guard.outputs.skip == 'false'
-        run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
+      - run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
 
-      - if: steps.guard.outputs.skip == 'false'
-        uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          allowed_bots: coderabbitai
           bot_name: claude[bot]
           bot_id: "209825114"
-          prompt: "/handle-pr-review ${{ github.event.pull_request.html_url }}"
+          prompt: "/handle-pr-review ${{ github.event.issue.pull_request.html_url }}"
           claude_args: |
             --max-turns 60
             --allowedTools "Bash(gh:*),Bash(git:*),Bash(~/.claude/skills/*),Read,Edit,Write,Glob,Grep${{ inputs.extra_allowed_tools != '' && format(',{0}', inputs.extra_allowed_tools) || '' }}"

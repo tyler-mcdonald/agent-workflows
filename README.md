@@ -4,14 +4,9 @@ Reusable GitHub Actions workflows that run a coding agent on pull requests. Only
 
 ## handle-review
 
-Runs the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) skill when a review is submitted on a PR, so the agent addresses the review's threads, commits by concern, and pushes. The repo's own CI runs on that push.
+Runs the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) skill when you tag `@claude` in a PR comment, so the agent addresses the PR's open review threads, commits by concern, and pushes. The repo's own CI runs on that push.
 
-It only runs when:
-
-- the reviewer is the repo owner or `coderabbitai[bot]`,
-- the PR isn't a draft,
-- the review isn't an approval with no body and no comments,
-- the reviewed commit wasn't authored by `claude[bot]` (one agent round per push).
+It only runs when the comment is on a PR, contains `@claude`, and was written by the repo owner. Reviews are never handled automatically.
 
 Runs are queued per PR (`agent-pr-<number>`), capped at 30 minutes and 60 turns.
 
@@ -23,8 +18,8 @@ Add `.github/workflows/handle-review.yml` to the calling repo and set the `CLAUD
 name: Handle review
 
 on:
-  pull_request_review:
-    types: [submitted]
+  issue_comment:
+    types: [created]
 
 jobs:
   handle-review:
