@@ -71,6 +71,32 @@ jobs:
           prompt: |
             Make an empty commit with message "Agent CI smoke test" and push it to the current branch.
             Then run: gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "Smoke test: pushed <sha>"
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(gh pr view:*)",
+                  "Bash(gh pr edit:*)",
+                  "Bash(gh pr comment:*)",
+                  "Bash(gh api repos/*/pulls/*/comments/*/replies *)",
+                  "Bash(git status:*)",
+                  "Bash(git diff:*)",
+                  "Bash(git log:*)",
+                  "Bash(git show:*)",
+                  "Bash(git rev-parse:*)",
+                  "Bash(git pull:*)",
+                  "Bash(git add:*)",
+                  "Bash(git commit:*)",
+                  "Bash(git push:*)",
+                  "Bash(~/.claude/skills/*)",
+                  "Read",
+                  "Edit",
+                  "Write",
+                  "Glob",
+                  "Grep"
+                ]
+              }
+            }
           claude_args: |
             --max-turns 60
-            --allowedTools "Bash(gh pr view:*),Bash(gh pr edit:*),Bash(gh pr comment:*),Bash(gh api repos/*/pulls/*/comments/*/replies *),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git rev-parse:*),Bash(git pull:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(~/.claude/skills/*),Read,Edit,Write,Glob,Grep${{ inputs.extra_allowed_tools != '' && format(',{0}', inputs.extra_allowed_tools) || '' }}"
+            ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
