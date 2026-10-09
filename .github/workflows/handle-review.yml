@@ -39,11 +39,11 @@ jobs:
         run: >-
           gh pr view "$PR" --repo "$REPO"
           --json isCrossRepository,headRefName
-          --jq '"cross=\(.isCrossRepository)\nhead_ref=\(.headRefName)"'
+          --jq '"is_fork=\(.isCrossRepository)\nhead_ref=\(.headRefName)"'
           >> "$GITHUB_OUTPUT"
 
       - name: Reject fork PRs
-        if: steps.pr.outputs.cross == 'true'
+        if: steps.pr.outputs.is_fork == 'true'
         env:
           PR: ${{ github.event.issue.number }}
         run: |
