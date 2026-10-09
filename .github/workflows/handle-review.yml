@@ -25,6 +25,13 @@ jobs:
       group: agent-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: false
     steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: tyler-mcdonald/agent-workflows
+          ref: ${{ job.workflow_sha }}
+          path: .agent-workflows
+          persist-credentials: false
+
       - id: guard
         env:
           GH_TOKEN: ${{ github.token }}
@@ -34,16 +41,7 @@ jobs:
           REVIEW_STATE: ${{ github.event.review.state }}
           REVIEW_BODY: ${{ github.event.review.body }}
           COMMIT: ${{ github.event.review.commit_id }}
-        run: |
-          skip() { echo "Skipping: $1"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; }
-          if [ "$REVIEW_STATE" = "approved" ] && [ -z "$REVIEW_BODY" ] &&
-             [ "$(gh api "repos/$REPO/pulls/$PR/reviews/$REVIEW_ID/comments" --jq length)" = "0" ]; then
-            skip "empty approval"
-          fi
-          if [ "$(gh api "repos/$REPO/commits/$COMMIT" --jq .commit.author.name)" = "claude[bot]" ]; then
-            skip "reviewed commit is Claude's"
-          fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
+        run: python3 .agent-workflows/scripts/review_guard.py
 
       - if: steps.guard.outputs.skip == 'false'
         uses: actions/checkout@v7
