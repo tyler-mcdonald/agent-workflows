@@ -8,7 +8,7 @@ Runs the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main
 
 It only runs when the comment is on a PR, starts with `@claude` followed by a space (e.g. `@claude please fix the typo`), and was written by the repo owner. Reviews are never handled automatically.
 
-Runs are queued per PR (`agent-pr-<number>`), capped at 30 minutes and 60 turns.
+Runs are serialized per PR (`agent-pr-<number>`): a running run is never cancelled, but only one run waits behind it, so a newer comment replaces an earlier pending run. Each run is capped at 30 minutes and 60 turns.
 
 ### Usage
 
