@@ -98,7 +98,6 @@ jobs:
               }
             }
           # Adds the caller's extra_allowed_tools on top of the settings allow list above.
-          # `cond && a || b` is GitHub's if/else: emits `--allowedTools "<extras>"` when set, else nothing.
           claude_args: |
             --max-turns 60
             ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
