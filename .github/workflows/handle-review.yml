@@ -1,0 +1,103 @@
+name: Handle review
+
+on:
+  workflow_call:
+    inputs:
+      extra_allowed_tools:
+        description: "Comma-separated tools to allow on top of the defaults, e.g. Bash(make:*)"
+        type: string
+        required: false
+        default: ""
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: true
+
+jobs:
+  handle:
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      (startsWith(github.event.comment.body, '@claude ') || github.event.comment.body == '@claude') &&
+      github.event.comment.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: agent-pr-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Look up PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+        run: >-
+          gh pr view "$PR" --repo "$REPO"
+          --json isCrossRepository,headRefName
+          --jq '"is_fork=\(.isCrossRepository)\nhead_ref=\(.headRefName)"'
+          >> "$GITHUB_OUTPUT"
+
+      - name: Reject fork PRs
+        if: steps.pr.outputs.is_fork == 'true'
+        env:
+          PR: ${{ github.event.issue.number }}
+        run: |
+          echo "::error::PR #$PR comes from a fork; handle-review only supports same-repo branches."
+          exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/checkout@v7
+        with:
+          repository: tyler-mcdonald/skills
+          path: .skills-src
+          persist-credentials: false
+
+      - run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          bot_name: claude[bot]
+          bot_id: "209825114"
+          prompt: |
+            Make an empty commit with message "Agent CI smoke test" and push it to the current branch.
+            Then run: gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "Smoke test: pushed <sha>"
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(gh pr view:*)",
+                  "Bash(gh pr edit:*)",
+                  "Bash(gh pr comment:*)",
+                  "Bash(gh api repos/*/pulls/*/comments/*/replies *)",
+                  "Bash(git status:*)",
+                  "Bash(git diff:*)",
+                  "Bash(git log:*)",
+                  "Bash(git show:*)",
+                  "Bash(git rev-parse:*)",
+                  "Bash(git pull:*)",
+                  "Bash(git add:*)",
+                  "Bash(git commit:*)",
+                  "Bash(git push:*)",
+                  "Bash(~/.claude/skills/*)",
+                  "Read",
+                  "Edit",
+                  "Write",
+                  "Glob",
+                  "Grep"
+                ]
+              }
+            }
+          # Adds the caller's extra_allowed_tools on top of the settings allow list above.
+          claude_args: |
+            --max-turns 60
+            ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
