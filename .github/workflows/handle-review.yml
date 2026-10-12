@@ -25,18 +25,18 @@ jobs:
       - name: Read event
         id: event
         env:
-          BODY: ${{ github.event.comment.body }}
-          AUTHOR: ${{ github.event.comment.user.login }}
+          RUN: >-
+            ${{
+              github.event_name == 'issue_comment' &&
+              github.event.issue.pull_request &&
+              (startsWith(github.event.comment.body, '@claude ') || github.event.comment.body == '@claude') &&
+              github.event.comment.user.login == github.repository_owner
+            }}
           NUMBER: ${{ github.event.issue.number }}
           URL: ${{ github.event.issue.pull_request.html_url }}
-          OWNER: ${{ github.repository_owner }}
         run: |
-          run=false
-          if [[ -n "$URL" && "$AUTHOR" == "$OWNER" && ( "$BODY" == "@claude" || "$BODY" == "@claude "* ) ]]; then
-            run=true
-          fi
           {
-            echo "run=$run"
+            echo "run=$RUN"
             echo "number=$NUMBER"
             echo "url=$URL"
           } >> "$GITHUB_OUTPUT"
