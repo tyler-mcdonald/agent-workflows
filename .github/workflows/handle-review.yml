@@ -20,7 +20,7 @@ jobs:
     outputs:
       run: ${{ steps.event.outputs.run }}
       pr_number: ${{ steps.event.outputs.pr_number }}
-      url: ${{ steps.event.outputs.url }}
+      pr_url: ${{ steps.event.outputs.pr_url }}
     steps:
       - name: Read event
         id: event
@@ -33,12 +33,12 @@ jobs:
               github.event.comment.user.login == github.repository_owner
             }}
           PR_NUMBER: ${{ github.event.issue.number }}
-          URL: ${{ github.event.issue.pull_request.html_url }}
+          PR_URL: ${{ github.event.issue.pull_request.html_url }}
         run: |
           {
             echo "run=$RUN"
             echo "pr_number=$PR_NUMBER"
-            echo "url=$URL"
+            echo "pr_url=$PR_URL"
           } >> "$GITHUB_OUTPUT"
 
   handle:
@@ -94,7 +94,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           bot_name: claude[bot]
           bot_id: "209825114"
-          prompt: /handle-pr-review ${{ needs.gate.outputs.url }}
+          prompt: /handle-pr-review ${{ needs.gate.outputs.pr_url }}
           settings: |
             {
               "permissions": {
