@@ -22,10 +22,10 @@ jobs:
       pr_number: ${{ steps.event.outputs.pr_number }}
       pr_url: ${{ steps.event.outputs.pr_url }}
     env:
-      BODY: ${{ github.event.comment.body }}
-      AUTHOR: ${{ github.event.comment.user.login }}
-      PR_NUMBER: ${{ github.event.issue.number }}
-      PR_URL: ${{ github.event.issue.pull_request.html_url }}
+      BODY: ${{ github.event.comment.body || github.event.review.body }}
+      AUTHOR: ${{ github.event.comment.user.login || github.event.review.user.login }}
+      PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+      PR_URL: ${{ github.event.issue.pull_request.html_url || github.event.pull_request.html_url }}
     steps:
       - name: Read event
         id: event

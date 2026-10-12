@@ -4,7 +4,7 @@ Reusable workflows to run coding agents.
 
 ## handle-review
 
-Comment `@claude <anything>` on a PR to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads.
+Start a PR comment, review, or inline review comment with `@claude` to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads.
 
 To use it, add this to the calling repo at `.github/workflows/handle-review.yml` and set the `CLAUDE_CODE_OAUTH_TOKEN` secret:
 
@@ -13,6 +13,10 @@ name: Handle review
 
 on:
   issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
     types: [created]
 
 jobs:
