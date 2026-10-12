@@ -21,19 +21,22 @@ jobs:
       run: ${{ steps.event.outputs.run }}
       pr_number: ${{ steps.event.outputs.pr_number }}
       pr_url: ${{ steps.event.outputs.pr_url }}
+    env:
+      IS_PR_EVENT: ${{ github.event_name == 'issue_comment' && !!github.event.issue.pull_request }}
+      BODY: ${{ github.event.comment.body }}
+      AUTHOR: ${{ github.event.comment.user.login }}
+      PR_NUMBER: ${{ github.event.issue.number }}
+      PR_URL: ${{ github.event.issue.pull_request.html_url }}
     steps:
       - name: Read event
         id: event
         env:
           RUN: >-
             ${{
-              github.event_name == 'issue_comment' &&
-              github.event.issue.pull_request &&
-              (startsWith(github.event.comment.body, '@claude ') || github.event.comment.body == '@claude') &&
-              github.event.comment.user.login == github.repository_owner
+              env.IS_PR_EVENT == 'true' &&
+              (startsWith(env.BODY, '@claude ') || env.BODY == '@claude') &&
+              env.AUTHOR == github.repository_owner
             }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-          PR_URL: ${{ github.event.issue.pull_request.html_url }}
         run: |
           {
             echo "run=$RUN"
