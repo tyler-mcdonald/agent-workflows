@@ -69,9 +69,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           bot_name: claude[bot]
           bot_id: "209825114"
-          prompt: |
-            Make an empty commit with message "Agent CI smoke test" and push it to the current branch.
-            Then run: gh pr comment ${{ github.event.issue.pull_request.html_url }} --body "Smoke test: pushed <sha>"
+          prompt: /handle-pr-review ${{ github.event.issue.pull_request.html_url }}
           settings: |
             {
               "permissions": {
@@ -90,6 +88,7 @@ jobs:
                   "Bash(git commit:*)",
                   "Bash(git push:*)",
                   "Bash(~/.claude/skills/*)",
+                  "Bash(/home/runner/.claude/skills/*)",
                   "Read",
                   "Edit",
                   "Write",
