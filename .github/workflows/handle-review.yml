@@ -54,6 +54,7 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.head_ref }}
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/checkout@v7
         with:
