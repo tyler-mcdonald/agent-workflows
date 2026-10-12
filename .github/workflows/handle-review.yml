@@ -13,21 +13,46 @@ on:
         required: true
 
 jobs:
+  gate:
+    permissions: {}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.event.outputs.run }}
+      number: ${{ steps.event.outputs.number }}
+      url: ${{ steps.event.outputs.url }}
+    steps:
+      - name: Read event
+        id: event
+        env:
+          BODY: ${{ github.event.comment.body }}
+          AUTHOR: ${{ github.event.comment.user.login }}
+          NUMBER: ${{ github.event.issue.number }}
+          URL: ${{ github.event.issue.pull_request.html_url }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          run=false
+          if [[ -n "$URL" && "$AUTHOR" == "$OWNER" && ( "$BODY" == "@claude" || "$BODY" == "@claude "* ) ]]; then
+            run=true
+          fi
+          {
+            echo "run=$run"
+            echo "number=$NUMBER"
+            echo "url=$URL"
+          } >> "$GITHUB_OUTPUT"
+
   handle:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     permissions:
       contents: write
       pull-requests: write
       issues: write
       id-token: write
-    if: >-
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      (startsWith(github.event.comment.body, '@claude ') || github.event.comment.body == '@claude') &&
-      github.event.comment.user.login == github.repository_owner
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
-      group: agent-pr-${{ github.event.issue.number }}
+      group: agent-pr-${{ needs.gate.outputs.number }}
       cancel-in-progress: false
     steps:
       - name: Look up PR
@@ -35,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          PR: ${{ github.event.issue.number }}
+          PR: ${{ needs.gate.outputs.number }}
         run: >-
           gh pr view "$PR" --repo "$REPO"
           --json isCrossRepository,headRefName
@@ -45,7 +70,7 @@ jobs:
       - name: Reject fork PRs
         if: steps.pr.outputs.is_fork == 'true'
         env:
-          PR: ${{ github.event.issue.number }}
+          PR: ${{ needs.gate.outputs.number }}
         run: |
           echo "::error::PR #$PR comes from a fork; handle-review only supports same-repo branches."
           exit 1
@@ -69,7 +94,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           bot_name: claude[bot]
           bot_id: "209825114"
-          prompt: /handle-pr-review ${{ github.event.issue.pull_request.html_url }}
+          prompt: /handle-pr-review ${{ needs.gate.outputs.url }}
           settings: |
             {
               "permissions": {
