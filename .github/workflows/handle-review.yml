@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       run: ${{ steps.event.outputs.run }}
-      number: ${{ steps.event.outputs.number }}
+      pr_number: ${{ steps.event.outputs.pr_number }}
       url: ${{ steps.event.outputs.url }}
     steps:
       - name: Read event
@@ -32,12 +32,12 @@ jobs:
               (startsWith(github.event.comment.body, '@claude ') || github.event.comment.body == '@claude') &&
               github.event.comment.user.login == github.repository_owner
             }}
-          NUMBER: ${{ github.event.issue.number }}
+          PR_NUMBER: ${{ github.event.issue.number }}
           URL: ${{ github.event.issue.pull_request.html_url }}
         run: |
           {
             echo "run=$RUN"
-            echo "number=$NUMBER"
+            echo "pr_number=$PR_NUMBER"
             echo "url=$URL"
           } >> "$GITHUB_OUTPUT"
 
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
-      group: agent-pr-${{ needs.gate.outputs.number }}
+      group: agent-pr-${{ needs.gate.outputs.pr_number }}
       cancel-in-progress: false
     steps:
       - name: Look up PR
@@ -60,7 +60,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          PR: ${{ needs.gate.outputs.number }}
+          PR: ${{ needs.gate.outputs.pr_number }}
         run: >-
           gh pr view "$PR" --repo "$REPO"
           --json isCrossRepository,headRefName
@@ -70,7 +70,7 @@ jobs:
       - name: Reject fork PRs
         if: steps.pr.outputs.is_fork == 'true'
         env:
-          PR: ${{ needs.gate.outputs.number }}
+          PR: ${{ needs.gate.outputs.pr_number }}
         run: |
           echo "::error::PR #$PR comes from a fork; handle-review only supports same-repo branches."
           exit 1
