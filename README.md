@@ -1,12 +1,12 @@
 # agent-workflows
 
-Reusable workflows that run a coding agent on PRs.
+Reusable workflows to run coding agents.
 
 ## handle-review
 
-Comment `@claude <anything>` on a PR (repo owner only) to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on its open review threads.
+Comment `@claude <anything>` on a PR to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads.
 
-To use it, add this to the calling repo as `.github/workflows/handle-review.yml` and set the `CLAUDE_CODE_OAUTH_TOKEN` secret:
+To use it, add this to the calling repo at `.github/workflows/handle-review.yml` and set the `CLAUDE_CODE_OAUTH_TOKEN` secret:
 
 ```yaml
 name: Handle review
