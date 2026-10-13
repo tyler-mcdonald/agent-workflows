@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: ""
+      model:
+        description: "Model the agent runs on"
+        type: string
+        required: false
+        default: "claude-opus-5-5"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
@@ -127,4 +132,5 @@ jobs:
           # Adds the caller's extra_allowed_tools on top of the settings allow list above.
           claude_args: |
             --max-turns 60
+            --model ${{ inputs.model }}
             ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}

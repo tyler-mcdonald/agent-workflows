@@ -2,6 +2,8 @@
 
 Reusable workflows to run coding agents.
 
+Every workflow in this repo takes the same `model` input with the same default, `claude-opus-5-5`.
+
 ## handle-review
 
 Start a PR comment, review, or inline review comment with `@claude` to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads.
@@ -29,6 +31,14 @@ jobs:
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
     # with:
     #   extra_allowed_tools: "Bash(make:*)"  # extra tools to allow, comma-separated
+    #   model: "claude-opus-5-5"             # model the agent runs on
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 ```
+
+### Inputs
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `extra_allowed_tools` | `""` | Comma-separated tools to allow on top of the defaults, e.g. `Bash(make:*)` |
+| `model` | `claude-opus-5-5` | Model the agent runs on |
