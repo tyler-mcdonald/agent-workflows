@@ -2,6 +2,12 @@ name: Handle review
 
 on:
   workflow_call:
+    inputs:
+      model:
+        description: "Model the agent runs on"
+        type: string
+        required: false
+        default: "claude-opus-5-5"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
@@ -96,4 +102,5 @@ jobs:
             ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
+            --model ${{ inputs.model }}
             --permission-mode auto

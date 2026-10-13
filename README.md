@@ -1,13 +1,19 @@
-# agent-workflows
+# Agent Workflows
 
-Reusable workflows to run coding agents.
+Reusable workflows to run agents in GitHub Actions. 
 
 ## handle-review
 
-Start a PR comment, review, or inline review comment with `@claude` to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads. Anything after `@claude` is passed to the agent as instructions. The agent cannot change files under `.github/workflows/`.
+Tag `@claude` on PR comments, review summaries, or inline review comments to run the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) agent skill. Anything after `@claude` is passed to the agent as instructions. The agent cannot change files under `.github/workflows/`.
 
-To use it, add this to the calling repo at `.github/workflows/handle-review.yml` and set the `CLAUDE_CODE_OAUTH_TOKEN` secret:
+### How to use this workflow
 
+Set the `CLAUDE_CODE_OAUTH_TOKEN` in your repository
+```bash
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo <owner>/<repo>
+```
+
+Add this to the calling repo at `.github/workflows/handle-review.yml`
 ```yaml
 name: Handle review
 
@@ -27,6 +33,8 @@ jobs:
       issues: write
       id-token: write
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
+    # with:
+    #   model: "<model id>"  # model the agent runs on (see workflow file for defaults)
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }} # set this in the calling repo
 ```
