@@ -98,7 +98,6 @@ jobs:
           bot_id: "209825114"
           prompt: |
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-            Also follow any instructions in the comment that triggered this run:
             ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
