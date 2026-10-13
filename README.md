@@ -27,6 +27,14 @@ jobs:
       issues: write
       id-token: write
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
+    # with:
+    #   model: "<model id>"  # model the agent runs on
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }} # set this in the calling repo
 ```
+
+### Inputs
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `model` | `claude-opus-5-5` | Model the agent runs on |

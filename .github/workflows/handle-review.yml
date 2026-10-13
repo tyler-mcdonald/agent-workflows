@@ -2,6 +2,12 @@ name: Handle review
 
 on:
   workflow_call:
+    inputs:
+      model:
+        description: "Model the agent runs on"
+        type: string
+        required: false
+        default: "claude-opus-5-5"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
@@ -93,4 +99,5 @@ jobs:
           prompt: /handle-pr-review ${{ needs.gate.outputs.pr_url }}
           claude_args: |
             --max-turns 60
+            --model ${{ inputs.model }}
             --permission-mode auto
