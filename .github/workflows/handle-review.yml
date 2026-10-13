@@ -2,12 +2,6 @@ name: Handle review
 
 on:
   workflow_call:
-    inputs:
-      extra_allowed_tools:
-        description: "Comma-separated tools to allow on top of the defaults, e.g. Bash(make:*)"
-        type: string
-        required: false
-        default: ""
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
@@ -97,8 +91,6 @@ jobs:
           bot_name: claude[bot]
           bot_id: "209825114"
           prompt: /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-          # Pre-approves the caller's extra_allowed_tools; auto mode decides everything else.
           claude_args: |
             --max-turns 60
             --permission-mode auto
-            ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
