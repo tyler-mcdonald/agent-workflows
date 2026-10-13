@@ -109,7 +109,7 @@ jobs:
           bot_id: "209825114"
           prompt: |
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-            ${{ github.event_name == 'pull_request_review_comment' && 'Review thread comment' || 'PR comment outside the review threads' }}: ${{ github.event.comment.body || github.event.review.body }}
+            Trigger (${{ github.event_name }}): ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
             --model ${{ inputs.model }}
