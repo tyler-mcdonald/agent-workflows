@@ -28,15 +28,13 @@ jobs:
       id-token: write
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
     # with:
-    #   extra_allowed_tools: "Bash(make:*)"  # extra tools to allow, comma-separated
-    #   model: "<model id>"                  # model the agent runs on
+    #   model: "<model id>"  # model the agent runs on
     secrets:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }} # set this in the calling repo
 ```
 
 ### Inputs
 
 | Input | Default | Description |
 | --- | --- | --- |
-| `extra_allowed_tools` | `""` | Comma-separated tools to allow on top of the defaults, e.g. `Bash(make:*)` |
 | `model` | `claude-opus-5-5` | Model the agent runs on |
