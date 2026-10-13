@@ -4,7 +4,7 @@ Reusable workflows to run agents in GitHub Actions.
 
 ## handle-review
 
-Tag `@claude` on PR comments, review summaries, or inline review comments to run the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) agent skill. 
+Tag `@claude` on PR comments, review summaries, or inline review comments to run the [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) agent skill. The workflow reacts to the comment with 👀 when it picks it up.
 
 ### How to use this workflow
 

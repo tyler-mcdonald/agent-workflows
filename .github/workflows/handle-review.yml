@@ -43,6 +43,24 @@ jobs:
             echo "pr_url=$PR_URL"
           } >> "$GITHUB_OUTPUT"
 
+  react:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: React to trigger
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUBJECT_ID: ${{ github.event.comment.node_id || github.event.review.node_id }}
+        run: >-
+          gh api graphql
+          -f subjectId="$SUBJECT_ID"
+          -f query='mutation($subjectId: ID!) { addReaction(input: {subjectId: $subjectId, content: EYES}) { clientMutationId } }'
+
   handle:
     needs: gate
     if: needs.gate.outputs.run == 'true'
@@ -98,7 +116,7 @@ jobs:
           bot_id: "209825114"
           prompt: |
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-            ${{ github.event.comment.body || github.event.review.body }}
+            ${{ github.event_name == 'pull_request_review_comment' && 'Review thread comment' || 'PR comment outside the review threads' }}: ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
             --model ${{ inputs.model }}
