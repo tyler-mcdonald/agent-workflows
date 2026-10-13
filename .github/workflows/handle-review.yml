@@ -52,14 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: React to trigger
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SUBJECT_ID: ${{ github.event.comment.node_id || github.event.review.node_id }}
-        run: >-
-          gh api graphql
-          -f subjectId="$SUBJECT_ID"
-          -f query='mutation($subjectId: ID!) { addReaction(input: {subjectId: $subjectId, content: EYES}) { clientMutationId } }'
+      - uses: tyler-mcdonald/agent-workflows/.github/actions/react-to-trigger@main
 
   handle:
     needs: gate
