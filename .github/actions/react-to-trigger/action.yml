@@ -1,0 +1,31 @@
+name: React to trigger
+description: Add a reaction to the comment or review that triggered the run.
+
+inputs:
+  subject-id:
+    description: "Node ID of the comment or review to react to"
+    required: false
+    default: ${{ github.event.comment.node_id || github.event.review.node_id }}
+  content:
+    description: "Reaction to add (GraphQL ReactionContent, e.g. EYES)"
+    required: false
+    default: EYES
+  token:
+    description: "Token with pull-requests and issues write access"
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Add reaction
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        SUBJECT_ID: ${{ inputs.subject-id }}
+        CONTENT: ${{ inputs.content }}
+      run: >-
+        gh api graphql
+        -f subjectId="$SUBJECT_ID"
+        -F content="$CONTENT"
+        -f query='mutation($subjectId: ID!, $content: ReactionContent!) { addReaction(input: {subjectId: $subjectId, content: $content}) { clientMutationId } }'
