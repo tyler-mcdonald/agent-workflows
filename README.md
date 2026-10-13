@@ -27,8 +27,6 @@ jobs:
       issues: write
       id-token: write
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
-    # with:
-    #   extra_allowed_tools: "Bash(make:*)"  # extra tools to allow, comma-separated
     secrets:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }} # set this in the calling repo
 ```

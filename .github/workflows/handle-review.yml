@@ -2,12 +2,6 @@ name: Handle review
 
 on:
   workflow_call:
-    inputs:
-      extra_allowed_tools:
-        description: "Comma-separated tools to allow on top of the defaults, e.g. Bash(make:*)"
-        type: string
-        required: false
-        default: ""
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
@@ -97,34 +91,6 @@ jobs:
           bot_name: claude[bot]
           bot_id: "209825114"
           prompt: /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-          settings: |
-            {
-              "permissions": {
-                "allow": [
-                  "Bash(gh pr view:*)",
-                  "Bash(gh pr edit:*)",
-                  "Bash(gh pr comment:*)",
-                  "Bash(gh api repos/*/pulls/*/comments/*/replies *)",
-                  "Bash(git status:*)",
-                  "Bash(git diff:*)",
-                  "Bash(git log:*)",
-                  "Bash(git show:*)",
-                  "Bash(git rev-parse:*)",
-                  "Bash(git pull:*)",
-                  "Bash(git add:*)",
-                  "Bash(git commit:*)",
-                  "Bash(git push:*)",
-                  "Bash(~/.claude/skills/*)",
-                  "Bash(/home/runner/.claude/skills/*)",
-                  "Read",
-                  "Edit",
-                  "Write",
-                  "Glob",
-                  "Grep"
-                ]
-              }
-            }
-          # Adds the caller's extra_allowed_tools on top of the settings allow list above.
           claude_args: |
             --max-turns 60
-            ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
+            --permission-mode auto
