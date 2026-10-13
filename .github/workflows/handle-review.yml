@@ -96,7 +96,9 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           bot_name: claude[bot]
           bot_id: "209825114"
-          prompt: /handle-pr-review ${{ needs.gate.outputs.pr_url }}
+          prompt: |
+            /handle-pr-review ${{ needs.gate.outputs.pr_url }}
+            ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
             --model ${{ inputs.model }}
