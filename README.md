@@ -2,8 +2,6 @@
 
 Reusable workflows to run coding agents.
 
-Every workflow in this repo takes the same `model` input with the same default.
-
 ## handle-review
 
 Start a PR comment, review, or inline review comment with `@claude` to run [`handle-pr-review`](https://github.com/tyler-mcdonald/skills/tree/main/handle-pr-review) on open review threads.
