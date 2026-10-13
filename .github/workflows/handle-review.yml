@@ -92,6 +92,7 @@ jobs:
       - run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
 
       - uses: anthropics/claude-code-action@v1
+        id: agent
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           bot_name: claude[bot]
@@ -128,3 +129,15 @@ jobs:
           claude_args: |
             --max-turns 60
             ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
+
+      - name: Fail on permission denials
+        env:
+          EXECUTION_FILE: ${{ steps.agent.outputs.execution_file }}
+        run: |
+          denials=$(jq -c '[.[] | select(.type == "result") | .permission_denials[]? | {tool: .tool_name, command: .tool_input.command, file: .tool_input.file_path}]' "$EXECUTION_FILE")
+          count=$(jq length <<< "$denials")
+          if [ "$count" -gt 0 ]; then
+            jq . <<< "$denials"
+            echo "::error::The agent was denied $count tool call(s), listed above."
+            exit 1
+          fi
