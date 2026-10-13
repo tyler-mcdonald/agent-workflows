@@ -130,14 +130,28 @@ jobs:
             --max-turns 60
             ${{ inputs.extra_allowed_tools != '' && format('--allowedTools "{0}"', inputs.extra_allowed_tools) || '' }}
 
-      - name: Fail on permission denials
+      - name: Fail if the agent was denied any tool calls
         env:
-          EXECUTION_FILE: ${{ steps.agent.outputs.execution_file }}
+          SESSION_LOG: ${{ steps.agent.outputs.execution_file }}
         run: |
-          denials=$(jq -c '[.[] | select(.type == "result") | .permission_denials[]? | {tool: .tool_name, command: .tool_input.command, file: .tool_input.file_path}]' "$EXECUTION_FILE")
-          count=$(jq length <<< "$denials")
-          if [ "$count" -gt 0 ]; then
-            jq . <<< "$denials"
-            echo "::error::The agent was denied $count tool call(s), listed above."
-            exit 1
+          denied_calls=$(jq '
+            [
+              .[]
+              | select(.type == "result")
+              | .permission_denials[]?
+              | {
+                  tool: .tool_name,
+                  command: .tool_input.command,
+                  file: .tool_input.file_path
+                }
+            ]
+          ' "$SESSION_LOG")
+
+          denied_count=$(jq length <<< "$denied_calls")
+          if [ "$denied_count" -eq 0 ]; then
+            exit 0
           fi
+
+          echo "$denied_calls"
+          echo "::error::The agent was denied $denied_count tool call(s), listed above."
+          exit 1
