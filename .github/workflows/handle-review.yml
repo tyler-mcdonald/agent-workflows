@@ -53,6 +53,16 @@ jobs:
       group: agent-pr-${{ needs.gate.outputs.pr_number }}
       cancel-in-progress: false
     steps:
+      - name: React to trigger
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUBJECT_ID: ${{ github.event.comment.node_id || github.event.review.node_id }}
+        run: >-
+          gh api graphql
+          -f subjectId="$SUBJECT_ID"
+          -f query='mutation($subjectId: ID!) { addReaction(input: {subjectId: $subjectId, content: EYES}) { clientMutationId } }'
+
       - name: Look up PR
         id: pr
         env:
@@ -94,7 +104,7 @@ jobs:
           bot_id: "209825114"
           prompt: |
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
-            Triggered by ${{ github.event.comment.html_url || github.event.review.html_url }}:
+            Triggered by ${{ github.event.comment.html_url || github.event.review.html_url }} (${{ github.event_name }}):
             ${{ github.event.comment.body || github.event.review.body }}
           claude_args: |
             --max-turns 60
