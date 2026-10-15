@@ -14,38 +14,34 @@ on:
 
 jobs:
   gate:
+    # Run only for a PR comment or review starting with @claude, from the repo owner.
+    if: >-
+      (github.event.issue.pull_request.html_url || github.event.pull_request.html_url) &&
+      (
+        startsWith(github.event.comment.body || github.event.review.body, '@claude ') ||
+        (github.event.comment.body || github.event.review.body) == '@claude'
+      ) &&
+      (github.event.comment.user.login || github.event.review.user.login) == github.repository_owner
     permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      run: ${{ steps.event.outputs.run }}
       pr_number: ${{ steps.event.outputs.pr_number }}
       pr_url: ${{ steps.event.outputs.pr_url }}
     env:
-      BODY: ${{ github.event.comment.body || github.event.review.body }}
-      AUTHOR: ${{ github.event.comment.user.login || github.event.review.user.login }}
       PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
       PR_URL: ${{ github.event.issue.pull_request.html_url || github.event.pull_request.html_url }}
     steps:
       - name: Read event
         id: event
-        env:
-          RUN: >-
-            ${{
-              env.PR_URL != '' &&
-              (startsWith(env.BODY, '@claude ') || env.BODY == '@claude') &&
-              env.AUTHOR == github.repository_owner
-            }}
         run: |
           {
-            echo "run=$RUN"
             echo "pr_number=$PR_NUMBER"
             echo "pr_url=$PR_URL"
           } >> "$GITHUB_OUTPUT"
 
   handle:
     needs: gate
-    if: needs.gate.outputs.run == 'true'
     permissions:
       contents: write
       pull-requests: write
