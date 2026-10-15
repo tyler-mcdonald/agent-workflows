@@ -42,7 +42,6 @@ jobs:
 
   react:
     needs: gate
-    if: needs.gate.outputs.run == 'true'
     permissions:
       pull-requests: write
       issues: write
