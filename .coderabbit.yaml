@@ -1,1 +1,5 @@
 inheritance: true
+remote_config:
+  repository: "coderabbit"
+  ref: "main"
+  path: ".coderabbit.yaml"
