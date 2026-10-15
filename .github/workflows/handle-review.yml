@@ -103,3 +103,4 @@ jobs:
             --max-turns 60
             --model ${{ inputs.model }}
             --permission-mode auto
+            --disallowedTools "Bash(gh pr merge *),Bash(gh api *merge*)"
