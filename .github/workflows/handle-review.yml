@@ -12,6 +12,9 @@ on:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
 
+env:
+  BOT_NAME: claude[bot]
+
 jobs:
   gate:
     # Run only for the repo owner's PR comment or review starting with @claude, or reply to Claude in a review thread.
@@ -30,29 +33,24 @@ jobs:
     outputs:
       pr_number: ${{ steps.event.outputs.pr_number }}
       pr_url: ${{ steps.event.outputs.pr_url }}
-      run: ${{ steps.event.outputs.tagged == 'true' || steps.reply.outputs.to_claude == 'true' }}
-      reply: ${{ steps.event.outputs.tagged != 'true' }}
+      run: ${{ env.TAGGED == 'true' || steps.reply.outputs.to_claude == 'true' }}
+      reply: ${{ env.TAGGED != 'true' }}
     env:
       PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
       PR_URL: ${{ github.event.issue.pull_request.html_url || github.event.pull_request.html_url }}
-      BODY: ${{ github.event.comment.body || github.event.review.body }}
+      TAGGED: ${{ startsWith(github.event.comment.body || github.event.review.body, '@claude ') || (github.event.comment.body || github.event.review.body) == '@claude' }}
     steps:
       - name: Read event
         id: event
         run: |
-          tagged=false
-          if [ "$BODY" = "@claude" ] || [ "${BODY#@claude }" != "$BODY" ]; then
-            tagged=true
-          fi
           {
             echo "pr_number=$PR_NUMBER"
             echo "pr_url=$PR_URL"
-            echo "tagged=$tagged"
           } >> "$GITHUB_OUTPUT"
 
       - name: Check reply is to Claude
         id: reply
-        if: steps.event.outputs.tagged != 'true'
+        if: env.TAGGED != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -63,7 +61,7 @@ jobs:
             --argjson root "$ROOT_ID" --argjson id "$COMMENT_ID" \
             '[add[] | select((.id == $root or .in_reply_to_id == $root) and .id < $id)] | sort_by(.id) | last | .user.login // ""')
           echo "Previous comment in thread by: $prev_author"
-          echo "to_claude=$([ "$prev_author" = "claude[bot]" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "to_claude=$([ "$prev_author" = "$BOT_NAME" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   handle:
     needs: gate
@@ -126,7 +124,7 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          bot_name: claude[bot]
+          bot_name: ${{ env.BOT_NAME }}
           bot_id: "209825114"
           prompt: |
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
