@@ -51,17 +51,22 @@ jobs:
       - name: Check reply is to Claude
         id: reply
         if: env.TAGGED != 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           ROOT_ID: ${{ github.event.comment.in_reply_to_id }}
           COMMENT_ID: ${{ github.event.comment.id }}
+          REVIEW_ID: ${{ github.event.comment.pull_request_review_id }}
         run: |
+          review_tagged=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$REVIEW_ID" \
+            --jq '(.body // "") | ascii_downcase | startswith("@claude ") or . == "@claude"')
+          echo "Part of a review tagging Claude: $review_tagged"
           prev_author=$(gh api --paginate --slurp "repos/$REPO/pulls/$PR_NUMBER/comments" | jq -r \
             --argjson root "$ROOT_ID" --argjson id "$COMMENT_ID" \
             '[add[] | select((.id == $root or .in_reply_to_id == $root) and .id < $id)] | sort_by(.id) | last | .user.login // ""')
           echo "Previous comment in thread by: $prev_author"
-          echo "to_claude=$([ "$prev_author" = "$BOT_NAME" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "to_claude=$([ "$review_tagged" = false ] && [ "$prev_author" = "$BOT_NAME" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   handle:
     needs: gate
