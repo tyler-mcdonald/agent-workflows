@@ -106,6 +106,8 @@ jobs:
             /handle-pr-review ${{ needs.gate.outputs.pr_url }}
             Triggered by ${{ github.event.comment.html_url || github.event.review.html_url }} (${{ github.event_name }}):
             ${{ github.event.comment.body || github.event.review.body }}
+
+            When done, run /trigger-bot-review ${{ needs.gate.outputs.pr_url }}
           claude_args: |
             --max-turns 60
             --model ${{ inputs.model }}
