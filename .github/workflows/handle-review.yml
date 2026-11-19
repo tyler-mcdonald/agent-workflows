@@ -8,9 +8,21 @@ on:
         type: string
         required: false
         default: "claude-opus-5-5"
+      agent_instructions_repo:
+        description: "Repo (owner/name) to load user-level agent instructions from; empty skips loading"
+        type: string
+        required: false
+        default: ""
+      agent_instructions_path:
+        description: "Path of the agent instructions file in agent_instructions_repo"
+        type: string
+        required: false
+        default: "claude/CLAUDE.md"
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
+      AGENT_INSTRUCTIONS_TOKEN:
+        required: false
 
 jobs:
   gate:
@@ -96,6 +108,17 @@ jobs:
           persist-credentials: false
 
       - run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
+
+      - name: Load agent instructions
+        if: inputs.agent_instructions_repo != ''
+        env:
+          GH_TOKEN: ${{ secrets.AGENT_INSTRUCTIONS_TOKEN || github.token }}
+          REPO: ${{ inputs.agent_instructions_repo }}
+          FILE_PATH: ${{ inputs.agent_instructions_path }}
+        run: >-
+          gh api "repos/$REPO/contents/$FILE_PATH"
+          -H "Accept: application/vnd.github.raw"
+          > ~/.claude/CLAUDE.md
 
       - uses: anthropics/claude-code-action@v1
         with:
