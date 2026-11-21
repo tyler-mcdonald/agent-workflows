@@ -33,11 +33,17 @@ jobs:
       issues: write
       id-token: write
     uses: tyler-mcdonald/agent-workflows/.github/workflows/handle-review.yml@main
-    # with:
-    #   model: "<model id>"  # model the agent runs on (see workflow file for defaults)
-    #   agent_instructions_repo: "<owner>/<repo>"  # load user-level agent instructions (like a global CLAUDE.md) from this repo
-    #   agent_instructions_path: "claude/CLAUDE.md"  # path of the instructions file in that repo
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      # AGENT_INSTRUCTIONS_TOKEN: ${{ secrets.AGENT_INSTRUCTIONS_TOKEN }}  # read access to agent_instructions_repo, if private
 ```
+
+### Optional settings
+
+Pass inputs under `with:` and secrets under `secrets:`.
+
+| Name | Kind | Default | Description |
+| --- | --- | --- | --- |
+| `model` | input | `claude-opus-5-5` | Model the agent runs on |
+| `agent_instructions_repo` | input | none | Repo (`owner/name`) to load user-level agent instructions from, like a global `CLAUDE.md` |
+| `agent_instructions_path` | input | `claude/CLAUDE.md` | Path of the instructions file in `agent_instructions_repo` |
+| `AGENT_INSTRUCTIONS_TOKEN` | secret | `github.token` | Token with read access to `agent_instructions_repo`, if it's private |
