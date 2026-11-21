@@ -117,6 +117,10 @@ jobs:
           FILE_PATH: ${{ inputs.agent_instructions_path }}
         shell: bash
         run: |
+          if [[ ! "$REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::agent_instructions_repo must be owner/name, got '$REPO'"
+            exit 1
+          fi
           gh api "repos/$REPO/contents/$FILE_PATH" \
             --jq 'if type == "object" and .type == "file" then .content else error("\(env.FILE_PATH) is not a file") end' \
             | base64 -d > ~/.claude/CLAUDE.md
