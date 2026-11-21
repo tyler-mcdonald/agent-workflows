@@ -121,7 +121,8 @@ jobs:
             echo "::error::agent_instructions_repo must be owner/name, got '$REPO'"
             exit 1
           fi
-          gh api "repos/$REPO/contents/$FILE_PATH" \
+          encoded_path=$(jq -rn --arg p "$FILE_PATH" '$p | split("/") | map(@uri) | join("/")')
+          gh api "repos/$REPO/contents/$encoded_path" \
             --jq 'if type == "object" and .type == "file" then .content else error("\(env.FILE_PATH) is not a file") end' \
             | base64 -d > ~/.claude/CLAUDE.md
 
