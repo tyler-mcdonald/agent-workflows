@@ -109,6 +109,17 @@ jobs:
 
       - run: mkdir -p ~/.claude && mv .skills-src ~/.claude/skills
 
+      - name: Validate agent instructions repo
+        if: inputs.agent_instructions_repo != ''
+        env:
+          REPO: ${{ inputs.agent_instructions_repo }}
+        shell: bash
+        run: |
+          if [[ ! "$REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::agent_instructions_repo must be owner/name, got '$REPO'"
+            exit 1
+          fi
+
       - name: Load agent instructions
         if: inputs.agent_instructions_repo != ''
         env:
@@ -117,13 +128,9 @@ jobs:
           FILE_PATH: ${{ inputs.agent_instructions_path }}
         shell: bash
         run: |
-          if [[ ! "$REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
-            echo "::error::agent_instructions_repo must be owner/name, got '$REPO'"
-            exit 1
-          fi
           encoded_path=$(jq -rn --arg p "$FILE_PATH" '$p | split("/") | map(@uri) | join("/")')
-          gh api "repos/$REPO/contents/$encoded_path" \
-            --jq 'if type == "object" and .type == "file" then .content else error("\(env.FILE_PATH) is not a file") end' \
+          file_content='if type == "object" and .type == "file" then .content else error("\(env.FILE_PATH) is not a file") end'
+          gh api "repos/$REPO/contents/$encoded_path" --jq "$file_content" \
             | base64 -d > ~/.claude/CLAUDE.md
 
       - uses: anthropics/claude-code-action@v1
