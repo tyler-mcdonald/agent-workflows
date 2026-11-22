@@ -46,4 +46,4 @@ Pass inputs under `with:` and secrets under `secrets:`.
 | `model` | input | `claude-opus-5-5` | Model the agent runs on |
 | `agent_instructions_repo` | input | none | Repo (`owner/name`) to load user-level agent instructions from, like a global `CLAUDE.md` |
 | `agent_instructions_path` | input | `claude/CLAUDE.md` | Path of the instructions file in `agent_instructions_repo` |
-| `AGENT_INSTRUCTIONS_TOKEN` | secret | `github.token` | Token with read access to `agent_instructions_repo`, if it's private |
+| `AGENT_INSTRUCTIONS_REPO_TOKEN` | secret | `github.token` | Token with read access to `agent_instructions_repo`, if it's private |

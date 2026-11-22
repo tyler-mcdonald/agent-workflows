@@ -21,7 +21,7 @@ on:
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN:
         required: true
-      AGENT_INSTRUCTIONS_TOKEN:
+      AGENT_INSTRUCTIONS_REPO_TOKEN:
         required: false
 
 jobs:
@@ -112,7 +112,7 @@ jobs:
       - name: Load agent instructions
         if: inputs.agent_instructions_repo != ''
         env:
-          GH_TOKEN: ${{ secrets.AGENT_INSTRUCTIONS_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.AGENT_INSTRUCTIONS_REPO_TOKEN || github.token }}
           REPO: ${{ inputs.agent_instructions_repo }}
           FILE_PATH: ${{ inputs.agent_instructions_path }}
         shell: bash
