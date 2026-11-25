@@ -26,13 +26,10 @@ on:
 
 jobs:
   gate:
-    # Run only for a PR comment or review starting with @claude, from the repo owner.
+    # Run only for a PR comment or review mentioning @claude, from the repo owner.
     if: >-
       (github.event.issue.pull_request.html_url || github.event.pull_request.html_url) &&
-      (
-        startsWith(github.event.comment.body || github.event.review.body, '@claude ') ||
-        (github.event.comment.body || github.event.review.body) == '@claude'
-      ) &&
+      contains(github.event.comment.body || github.event.review.body, '@claude') &&
       (github.event.comment.user.login || github.event.review.user.login) == github.repository_owner
     permissions: {}
     runs-on: ubuntu-latest
